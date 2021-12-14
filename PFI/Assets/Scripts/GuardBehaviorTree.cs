@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using UnityEditor;
-using UnityEditor.VersionControl;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UI;
 
 namespace Behavior_Tree
 {
-
     [RequireComponent(typeof(NavMeshAgent))]
     public class GuardBehaviorTree : BehaviorTree
     {
@@ -18,15 +12,10 @@ namespace Behavior_Tree
         [SerializeField] private float detectionrange;
         private NavMeshAgent navMeshAgent;
         
-        
-        private void Awake()
-        {
-            navMeshAgent = GetComponent<NavMeshAgent>();
-        }
+        private void Awake() => navMeshAgent = GetComponent<NavMeshAgent>();
 
         protected override Node SetUpTree()
         {
-            
             Node patrol = new TaskPatrol(navMeshAgent,waypoints); // Node enfant de root
            
             Node detectEnnemy = new DetectEnnemy(transform, ennemy, detectionrange); // Node enfant de sequence
@@ -37,7 +26,6 @@ namespace Behavior_Tree
             return selector;
         }
     }
-
     
     //Pour pouvoir réutiliser les comportement il vaut mieux les mettre dans des fichiers differents
     public class DetectEnnemy : Node
@@ -56,9 +44,7 @@ namespace Behavior_Tree
         public override State Evaluate()
         {
             if (Vector3.Distance(position.position, target.position) <= detectionRange )
-            {
                 return State.SUCCESS;
-            }
 
             return State.FAILURE;
         }
@@ -68,11 +54,13 @@ namespace Behavior_Tree
     {
         private NavMeshAgent agent;
         private Transform ennemy;
+        
         public ChaseEnnemy(NavMeshAgent pAgent, Transform pEnnemy)
         {
             agent = pAgent;
             ennemy = pEnnemy;
         }
+        
         public override State Evaluate()
         {
             agent.destination = ennemy.position;

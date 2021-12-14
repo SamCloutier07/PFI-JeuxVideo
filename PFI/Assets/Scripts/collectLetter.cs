@@ -1,22 +1,18 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using RPG.Movement;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 
 public class collectLetter : MonoBehaviour
 {
-    private PlayerControler playerController;
+    private PlayerController playerController;
     private NavMeshAgent playerNavMesh;
     private Text collectText;
     [SerializeField] [TextArea] string letterContent;
 
     private HoverOutline hoverOutline;
     private Outline outline;
-    private bool collected = false;
-    private bool isReading = false;
+    private bool collected;
+    private bool isReading;
 
     private Text Letter;
     private RawImage letterBackground;
@@ -24,7 +20,7 @@ public class collectLetter : MonoBehaviour
 
     private void Awake()
     {
-        playerController = GameObject.FindWithTag("Player").GetComponent<PlayerControler>();
+        playerController = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
         collectText = GameObject.Find("ReadLetter").GetComponent<Text>();
         hoverOutline = GetComponent<HoverOutline>();
         outline = GetComponent<Outline>();
@@ -35,7 +31,7 @@ public class collectLetter : MonoBehaviour
 
     private void OnMouseOver()
     {
-        if (playerController.IsInRange(transform.gameObject, 18.0f))
+        if (playerController.IsInRange(transform.gameObject, 18.0f) && !playerController.IsInChase())
         {
             if (Input.GetKeyDown(KeyCode.F))
             {
@@ -49,14 +45,12 @@ public class collectLetter : MonoBehaviour
                 isReading = true;
                 DisplayLetter();
             }
+            
             if(!collected)
                 collectText.enabled = true;
         }
         else
-        {
-           
             collectText.enabled = false;
-        }
     }
 
     private void OnMouseExit()
@@ -72,6 +66,7 @@ public class collectLetter : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 playerNavMesh.isStopped = false;
+                Time.timeScale = 1f;
                 HideLetter();
                 collectText.enabled = false;
                 isReading = false;
@@ -84,7 +79,7 @@ public class collectLetter : MonoBehaviour
         letterBackground.enabled = true;
         Letter.enabled = true;
         Letter.text = letterContent;
-        
+        Time.timeScale = 0;
     }
     
     private void HideLetter()

@@ -8,12 +8,12 @@ using UnityEngine.UI;
 
 public class CoverHoverOutline : MonoBehaviour
 {
-    private PlayerControler Player;
+    private PlayerController Player;
     private Text coverText;
 
     private void Awake()
     {
-        Player = GameObject.Find("Player").GetComponent<PlayerControler>();
+        Player = GameObject.Find("Player").GetComponent<PlayerController>();
         coverText = GameObject.Find("Assassinate").GetComponent<Text>();
         transform.GetChild(1).gameObject.SetActive(false);
     }

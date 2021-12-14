@@ -47,7 +47,6 @@ public class PlaneMeshGeneratorComponent : MonoBehaviour
         }
         mesh.vertices = verticesArray;
     }
-   
 
     private void CreateTriangles()
     {
@@ -84,6 +83,4 @@ public class PlaneMeshGeneratorComponent : MonoBehaviour
         ApplyUVs();
         mesh.RecalculateNormals();
     }
-
-   
 }

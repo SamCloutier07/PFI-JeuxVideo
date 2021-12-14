@@ -1,4 +1,3 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using RPG.Movement;
@@ -6,33 +5,58 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 
-public class PlayerControler : MonoBehaviour
+public class PlayerController : MonoBehaviour
     {
         // Components
         private MoverComp mover;
         private NavMeshAgent navMesh;
         private Animator animator;
+        private Image redScreenIndicator;
+        private GameObject gameOverText;
         
-        public bool canKill = false;
-        [SerializeField]private float assassinationRange = 3.0f;
+        public bool canKill;
+        [SerializeField] private float assassinationRange = 3.0f;
+        [SerializeField] private float maxTimeInChase = 6f;
         private GameObject currentTarget;
+        private List<string> chaseList = new List<string>();
+        private float chaseTime;
+        private bool isGameOver;
 
         void Awake()
         {
             mover = GetComponent<MoverComp>();
             navMesh = GetComponent<NavMeshAgent>();
             animator = GetComponent<Animator>();
+            redScreenIndicator = GameObject.Find("RedScreenIndicator").GetComponent<Image>();
+            setRedScreenIndicatorOpacity(0f);
+            gameOverText = GameObject.Find("GameOverScreen");
+            gameOverText.SetActive(false);
         }
 
         void Update()
         {
-          
-            if(InteractWithEnnemy()) return;
+            if (isGameOver) return;
             
-            if(InteractWithMovement()) return;
-        }
+            if (IsInChase())
+            {
+                chaseTime += Time.deltaTime;
+                setRedScreenIndicatorOpacity(chaseTime / maxTimeInChase);
+            }
+            else
+            {
+                if (chaseTime - Time.deltaTime < 0f)
+                    chaseTime = 0f;
+                else chaseTime -= Time.deltaTime;
+                
+                setRedScreenIndicatorOpacity(chaseTime / maxTimeInChase);
+            }
 
-       
+            if (chaseTime >= maxTimeInChase)
+                gameOver();
+
+            if (InteractWithEnnemy() || InteractWithMovement()) return;
+        }
+        
         private bool InteractWithEnnemy()
         {
             RaycastHit[] hits = Physics.RaycastAll(GetMouseRay());
@@ -45,6 +69,7 @@ public class PlayerControler : MonoBehaviour
                 navMesh.stoppingDistance = 10f;
                 if (!IsInRange(target.gameObject, 0)) continue;
                 canKill = true;
+                
                 if (Input.GetKeyDown(KeyCode.F))
                 {
                     currentTarget = target.gameObject;
@@ -99,10 +124,7 @@ public class PlayerControler : MonoBehaviour
             currentTarget.GetComponent<HoverOutline>().RemoveCanKillText();
             currentTarget.GetComponent<HoverOutline>().enabled = false;
             currentTarget.GetComponent<CapsuleCollider>().enabled = false;
-            
         }
-        
-        
         
         private static Ray GetMouseRay() => Camera.main.ScreenPointToRay(Input.mousePosition);
         
@@ -110,14 +132,33 @@ public class PlayerControler : MonoBehaviour
         {
             if(distance == 0)
                 return Vector3.Distance(transform.position, target.transform.position) < assassinationRange;
-            else
-            {
-                return Vector3.Distance(transform.position, target.transform.position) < distance;
-            }
+
+            return Vector3.Distance(transform.position, target.transform.position) < distance;
         } 
-
-
+        
         public  bool CanKill() => canKill;
 
-    }
+        public void AddChase(string obj)
+        {
+            if (!chaseList.Contains(obj)) chaseList.Add(obj);
+        }
 
+        public void RemoveChase(string obj) =>
+            chaseList.Remove(obj);
+
+        public bool IsInChase() => chaseList.Count > 0;
+
+        private void gameOver()
+        {
+            isGameOver = true;
+            gameOverText.SetActive(true);
+            StartCoroutine(GameObject.Find("Fader").GetComponent<Fader>().FadeOut(1.5f, true));
+        }
+        
+        private void setRedScreenIndicatorOpacity(float opacity)
+        {
+            var tempColor = redScreenIndicator.color;
+            tempColor.a = opacity;
+            redScreenIndicator.color = tempColor;
+        }
+    }

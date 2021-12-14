@@ -1,10 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using RPG.Movement;
 using UnityEngine;
 using UnityEngine.AI;
-
 
     public class AIControler : MonoBehaviour
     {
@@ -22,9 +18,10 @@ using UnityEngine.AI;
         private Vector3 guardLocation;
         private float timeSinceLastSawPlayer = Mathf.Infinity;
         private float timeSinceArrivedAtWaypoint = Mathf.Infinity;
-        private int currentWaypointIndex = 0;
+        private int currentWaypointIndex ;
         private Vector3 idlePosition;
         private Quaternion idleRotation;
+        private PlayerController playerController;
         
         // Parameters
         [SerializeField] private float chaseDistance = 7f;
@@ -32,10 +29,12 @@ using UnityEngine.AI;
         [SerializeField] private PatrolPath patrolPath;
         [SerializeField] private float waypointTolerance = 1f;
         [SerializeField] private float waypointDwellTime = 2f;
+        
         private void Awake()
         {
             // Getting the player reference.
             player = GameObject.FindWithTag("Player");
+            playerController = player.GetComponent<PlayerController>();
             guardLocation = transform.position;
             mover = GetComponent<MoverComp>();
             actionScheduler = GetComponent<ActionScheduler>();
@@ -52,37 +51,34 @@ using UnityEngine.AI;
         {
             if (transform.GetComponent<Ennemy>().isDead)
             {
-                
                 ChaseIndicator.SetActive(false);
+                playerController.RemoveChase(transform.gameObject.name);
                 SuspiciousIndicator.SetActive(false);
                 navMeshAgent.isStopped = true;   
                 actionScheduler.CancelCurrent();
                 return;
             }
+            
             if (inAttackRangeOfPlayer())
-            {
                 ChaseBehaviour();
-            }
-            else if(timeSinceLastSawPlayer < suspicionTime)
-            {
+            else if (timeSinceLastSawPlayer < suspicionTime)
                 SuspicionBehaviour();
-            }
             else
             {
-                if(patrolPath != null)
+                if (patrolPath != null)
                     PatrolBehaviour();
-                else if(Vector3.Distance(transform.position, idlePosition) < waypointTolerance)
+                else if (Vector3.Distance(transform.position, idlePosition) < waypointTolerance)
                 {
                     SuspiciousIndicator.SetActive(false);
                     ChaseIndicator.SetActive(false);
+                    playerController.RemoveChase(transform.gameObject.name);
                     actionScheduler.CancelCurrent();
                     transform.rotation = idleRotation;
                 }
                 else
-                {
                     mover.StartMoveAction(idlePosition, 10f);
-                }
             }
+            
             UpdateTimers();
         }
 
@@ -96,9 +92,11 @@ using UnityEngine.AI;
         {
             SuspiciousIndicator.SetActive(false);
             ChaseIndicator.SetActive(true);
+            playerController.AddChase(transform.gameObject.name);
             if (transform.GetComponent<Ennemy>().isDead)
             {
                 actionScheduler.CancelCurrent();
+                playerController.RemoveChase(transform.gameObject.name);
                 return;
             }
             timeSinceLastSawPlayer = 0;
@@ -108,6 +106,7 @@ using UnityEngine.AI;
         private void SuspicionBehaviour()
         {
             ChaseIndicator.SetActive(false);
+            playerController.RemoveChase(transform.gameObject.name);
             SuspiciousIndicator.SetActive(true);
             if (transform.GetComponent<Ennemy>().isDead)
             {
@@ -121,6 +120,7 @@ using UnityEngine.AI;
         {
             SuspiciousIndicator.SetActive(false);
             ChaseIndicator.SetActive(false);
+            playerController.RemoveChase(transform.gameObject.name);
             if (transform.GetComponent<Ennemy>().isDead)
             { 
                 actionScheduler.CancelCurrent();
@@ -138,45 +138,28 @@ using UnityEngine.AI;
                 nextPosition = GetCurrentWaypoint();
             }
             else
-            {
                 nextPosition = idlePosition;
-            }
             
             if (timeSinceArrivedAtWaypoint > waypointDwellTime)
                 mover.StartMoveAction(nextPosition, 5);
             
         }
 
-        private bool AtWaypoint()
-        {
-            return Vector3.Distance(transform.position, GetCurrentWaypoint()) < waypointTolerance;
-        }
+        private bool AtWaypoint() =>
+            Vector3.Distance(transform.position, GetCurrentWaypoint()) < waypointTolerance;
 
-        private void CycleWaypoint()
-        {
+        private void CycleWaypoint() =>
             currentWaypointIndex = patrolPath.GetNextIndex(currentWaypointIndex);
-        }
 
-        private Vector3 GetCurrentWaypoint()
-        {
-            return patrolPath.GetWaypoint(currentWaypointIndex);
-        }
+        private Vector3 GetCurrentWaypoint() =>
+            patrolPath.GetWaypoint(currentWaypointIndex);
 
-        private bool inAttackRangeOfPlayer()
-        {
-            float dot = Vector3.Dot(transform.forward, (player.transform.position - transform.position).normalized);
-            if (dot > 0.7f && Vector3.Distance(player.transform.position, transform.position)  < chaseDistance)
-            {
-                return true;
-            }
-            return false;
-        }
-        
+        private bool inAttackRangeOfPlayer() =>
+            Vector3.Dot(transform.forward, (player.transform.position - transform.position).normalized) > 0.7f && Vector3.Distance(player.transform.position, transform.position)  < chaseDistance;
+
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawWireSphere(transform.position, chaseDistance);
         }
     }
-
-

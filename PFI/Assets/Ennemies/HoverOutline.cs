@@ -8,11 +8,11 @@ using UnityEngine.UI;
 public class HoverOutline : MonoBehaviour
 {
     private Text assassinateText;
-    private PlayerControler Player;
+    private PlayerController Player;
 
     private void Awake()
     {
-        Player = GameObject.Find("Player").GetComponent<PlayerControler>();
+        Player = GameObject.Find("Player").GetComponent<PlayerController>();
         assassinateText = GameObject.Find("Assassinate").GetComponent<Text>();
     }
 
