@@ -7,6 +7,9 @@ using UnityEngine;
 public class FieldOfView : MonoBehaviour
 {
     private Mesh mesh;
+    
+    [SerializeField] float fov = 90f;
+    [SerializeField] float viewDistance = 30f;
     // Start is called before the first frame update
     void Start()
     {
@@ -17,12 +20,11 @@ public class FieldOfView : MonoBehaviour
     private void Update()
     {
         Vector3 origin = Vector3.zero;
-        float fov = 90f;
+        
         int rayCount = 10;
         float angle = 0f;
         float angleIncrease = fov / rayCount;
-        float viewDistance = 30f;
-        
+       
         Vector3[] vertices = new Vector3[rayCount + 1 + 1];
         Vector2[] uv = new Vector2[vertices.Length];
         int[] triangles = new int[rayCount * 3];

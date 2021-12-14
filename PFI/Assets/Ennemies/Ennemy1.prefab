@@ -1978,7 +1978,6 @@ MonoBehaviour:
   patrolPath: {fileID: 0}
   waypointTolerance: 1
   waypointDwellTime: 3
-  patrolSpeedFraction: 0.2
 --- !u!114 &6833955888713272537
 MonoBehaviour:
   m_ObjectHideFlags: 0
