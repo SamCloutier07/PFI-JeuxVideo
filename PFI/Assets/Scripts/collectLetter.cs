@@ -16,7 +16,7 @@ public class collectLetter : MonoBehaviour
 
     private Text Letter;
     private RawImage letterBackground;
-    
+    private SceneTransitionComponent sceneTransitionComponent;
 
     private void Awake()
     {
@@ -27,6 +27,7 @@ public class collectLetter : MonoBehaviour
         Letter = GameObject.Find("LetterText").GetComponent<Text>();
         letterBackground = GameObject.Find("LetterBackground").GetComponent<RawImage>();
         playerNavMesh = GameObject.FindWithTag("Player").GetComponent<NavMeshAgent>();
+        sceneTransitionComponent = GameObject.Find("ChangeSceneTrigger").GetComponent<SceneTransitionComponent>();
     }
 
     private void OnMouseOver()
@@ -35,6 +36,7 @@ public class collectLetter : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.F))
             {
+                sceneTransitionComponent.pickedLetters++;
                 playerNavMesh.isStopped = true;
                 collected = true;
                 transform.parent.GetChild(1).gameObject.SetActive(false);
@@ -53,10 +55,8 @@ public class collectLetter : MonoBehaviour
             collectText.enabled = false;
     }
 
-    private void OnMouseExit()
-    {
+    private void OnMouseExit() =>
         collectText.enabled = false;
-    }
 
     private void Update()
     {

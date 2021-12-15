@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,26 +5,26 @@ using UnityEngine.UI;
 public class HoverOutline : MonoBehaviour
 {
     private Text assassinateText;
-    private PlayerController Player;
+    private PlayerController player;
+    private CombatTarget combatTarget;
 
     private void Awake()
     {
-        Player = GameObject.Find("Player").GetComponent<PlayerController>();
+        player = GameObject.Find("Player").GetComponent<PlayerController>();
         assassinateText = GameObject.Find("Assassinate").GetComponent<Text>();
+        combatTarget = GetComponent<CombatTarget>();
     }
 
     private void Update()
     {
-        if(!Player.CanKill()) RemoveCanKillText();
+        if(!player.CanKill()) RemoveCanKillText();
     }
 
     private void OnMouseOver()
     {
-        if(Player.IsInRange(transform.gameObject))
-        {
+        if(player.IsInRange(transform.gameObject) && player.CanAttack(combatTarget))
             ShowKillText();
-        }
-        
+
         transform.GetComponent<Outline>().enabled = true;
     }
 
@@ -37,13 +34,9 @@ public class HoverOutline : MonoBehaviour
         transform.GetComponent<Outline>().enabled = false;
     }
 
-    private void ShowKillText()
-    {
+    private void ShowKillText() =>
         assassinateText.enabled = true;
-    }
 
-    public void RemoveCanKillText()
-    {
+    public void RemoveCanKillText() =>
         assassinateText.enabled = false;
-    }
 }

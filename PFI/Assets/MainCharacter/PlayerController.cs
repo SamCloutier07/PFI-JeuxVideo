@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
         public bool canKill;
         [SerializeField] private float assassinationRange = 3.0f;
         [SerializeField] private float maxTimeInChase = 6f;
+        [SerializeField] private float enemySizeKill = 5f;
         private GameObject currentTarget;
         private List<string> chaseList = new List<string>();
         private float chaseTime;
@@ -70,12 +71,12 @@ public class PlayerController : MonoBehaviour
                 if (!IsInRange(target.gameObject, 0)) continue;
                 canKill = true;
                 
-                if (Input.GetKeyDown(KeyCode.F))
+                if (Input.GetKeyDown(KeyCode.F) && CanAttack(target))
                 {
                     currentTarget = target.gameObject;
                     currentTarget.GetComponent<Ennemy>().isDead = true;
                     navMesh.isStopped = true;
-                    transform.LookAt(target.transform);
+                    navMesh.ResetPath();
                     Attack(target.gameObject);
                     canKill = false;
                 }
@@ -85,6 +86,9 @@ public class PlayerController : MonoBehaviour
            
             return false;
         }
+
+        public bool CanAttack(CombatTarget target) =>
+            target.transform.localScale.y.Equals(enemySizeKill);
         
         private bool InteractWithMovement()
         {
@@ -98,10 +102,13 @@ public class PlayerController : MonoBehaviour
                 {
                     if(Input.GetMouseButtonDown(0))
                         mover.StartMoveAction(hit.transform.GetChild(0).position, 1f);
+                    
                     return true;
                 }
+                
                 if(Input.GetMouseButton(0))
                     mover.StartMoveAction(hit.point, 1f);
+                
                 return true;
             }
             return false;
@@ -109,8 +116,11 @@ public class PlayerController : MonoBehaviour
         
         public void Attack(GameObject combatTarget)
         {
-            animator.SetTrigger("Assassinate");
+            var enemyPos = combatTarget.transform.localPosition;
+            transform.position = new Vector3(enemyPos.x, enemyPos.y, enemyPos.z + 5f);
+            transform.LookAt(combatTarget.transform);
             currentTarget = combatTarget;
+            animator.SetTrigger("Assassinate");
             combatTarget.GetComponent<Ennemy>().Die();
             StartCoroutine("OnCompleteAttackAnimation");
         }
@@ -128,14 +138,9 @@ public class PlayerController : MonoBehaviour
         
         private static Ray GetMouseRay() => Camera.main.ScreenPointToRay(Input.mousePosition);
         
-        public bool IsInRange(GameObject target, float distance = 0)
-        {
-            if(distance == 0)
-                return Vector3.Distance(transform.position, target.transform.position) < assassinationRange;
+        public bool IsInRange(GameObject target, float distance = 0) =>
+            Vector3.Distance(transform.position, target.transform.position) < (distance == 0 ? assassinationRange : distance);
 
-            return Vector3.Distance(transform.position, target.transform.position) < distance;
-        } 
-        
         public  bool CanKill() => canKill;
 
         public void AddChase(string obj)

@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Outline))]
@@ -10,9 +7,10 @@ using UnityEngine;
 public class Ennemy : MonoBehaviour
 {
     private Animator animator;
-    public bool isDead = false;
+    public bool isDead;
     private ActionScheduler actionscheduler;
     private GameObject player;
+    
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -27,10 +25,6 @@ public class Ennemy : MonoBehaviour
         transform.GetComponentInChildren<FieldOfView>().gameObject.SetActive(false);
         transform.rotation = Quaternion.LookRotation(transform.position - player.transform.position);
         transform.position = player.transform.position + player.transform.TransformDirection(new Vector3(0, 0, 5));
-        
         isDead = true;
-       
     }
-    
-   
 }

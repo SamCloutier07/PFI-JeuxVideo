@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -11,6 +9,7 @@ public class FieldOfView : MonoBehaviour
     [SerializeField] float fov = 90f;
     [SerializeField] float viewDistance = 30f;
     // Start is called before the first frame update
+    
     void Start()
     {
         mesh = new Mesh();
@@ -28,8 +27,7 @@ public class FieldOfView : MonoBehaviour
         Vector3[] vertices = new Vector3[rayCount + 1 + 1];
         Vector2[] uv = new Vector2[vertices.Length];
         int[] triangles = new int[rayCount * 3];
-
-
+        
         vertices[0] = origin;
 
         int vertexIndex = 1;
@@ -71,8 +69,6 @@ public class FieldOfView : MonoBehaviour
         mesh.uv = uv;
         mesh.triangles = triangles;
     }
-
-    
 
     public static Vector3 GetVectorFromAngle(float angle)
     {
