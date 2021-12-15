@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using RPG.Movement;
@@ -12,7 +13,9 @@ public class PlayerController : MonoBehaviour
         private NavMeshAgent navMesh;
         private Animator animator;
         private Image redScreenIndicator;
+        private GameObject restartButton;
         private GameObject gameOverText;
+        private AudioSource killSound;
         
         public bool canKill;
         [SerializeField] private float assassinationRange = 3.0f;
@@ -22,6 +25,7 @@ public class PlayerController : MonoBehaviour
         private List<string> chaseList = new List<string>();
         private float chaseTime;
         private bool isGameOver;
+        private bool isKilling ;
 
         void Awake()
         {
@@ -32,6 +36,10 @@ public class PlayerController : MonoBehaviour
             setRedScreenIndicatorOpacity(0f);
             gameOverText = GameObject.Find("GameOverScreen");
             gameOverText.SetActive(false);
+            restartButton = GameObject.Find("RestartButton");
+            restartButton.SetActive(false);
+            killSound = GameObject.Find("ChockingSound").GetComponent<AudioSource>();
+            
         }
 
         void Update()
@@ -73,10 +81,12 @@ public class PlayerController : MonoBehaviour
                 
                 if (Input.GetKeyDown(KeyCode.F) && CanAttack(target))
                 {
+                    isKilling = true;
                     currentTarget = target.gameObject;
                     currentTarget.GetComponent<Ennemy>().isDead = true;
-                    navMesh.isStopped = true;
                     navMesh.ResetPath();
+                    navMesh.isStopped = true;
+                 
                     Attack(target.gameObject);
                     canKill = false;
                 }
@@ -88,15 +98,15 @@ public class PlayerController : MonoBehaviour
         }
 
         public bool CanAttack(CombatTarget target) =>
-            target.transform.localScale.y.Equals(enemySizeKill);
+            target != null && target.transform.localScale.y.Equals(enemySizeKill);
         
         private bool InteractWithMovement()
         {
-            navMesh.stoppingDistance = 10f;
+            navMesh.stoppingDistance = 1f;
             RaycastHit hit;
             bool hasHit = Physics.Raycast(GetMouseRay(), out hit);
 
-            if (hasHit)
+            if (hasHit && !isKilling)
             {
                 if (hit.transform.gameObject.layer == 6) // Si c'est un cover
                 {
@@ -120,6 +130,7 @@ public class PlayerController : MonoBehaviour
             transform.position = new Vector3(enemyPos.x, enemyPos.y, enemyPos.z + 5f);
             transform.LookAt(combatTarget.transform);
             currentTarget = combatTarget;
+            killSound.Play();
             animator.SetTrigger("Assassinate");
             combatTarget.GetComponent<Ennemy>().Die();
             StartCoroutine("OnCompleteAttackAnimation");
@@ -131,6 +142,7 @@ public class PlayerController : MonoBehaviour
                 yield return null;
 
             navMesh.isStopped = false;
+            isKilling = false;
             currentTarget.GetComponent<HoverOutline>().RemoveCanKillText();
             currentTarget.GetComponent<HoverOutline>().enabled = false;
             currentTarget.GetComponent<CapsuleCollider>().enabled = false;
@@ -157,6 +169,7 @@ public class PlayerController : MonoBehaviour
         {
             isGameOver = true;
             gameOverText.SetActive(true);
+            restartButton.SetActive(true);
             StartCoroutine(GameObject.Find("Fader").GetComponent<Fader>().FadeOut(1.5f, true));
         }
         
@@ -166,4 +179,5 @@ public class PlayerController : MonoBehaviour
             tempColor.a = opacity;
             redScreenIndicator.color = tempColor;
         }
+        
     }
