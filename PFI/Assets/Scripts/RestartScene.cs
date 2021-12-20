@@ -21,19 +21,5 @@ public class RestartScene : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     
-    public IEnumerator ResetScene()
-    {
-        yield return fader.FadeIn(0);
-        
-        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(0);
-        asyncOperation.allowSceneActivation = false;
-        
-        while (!asyncOperation.isDone)
-        {
-            if (asyncOperation.progress >= 0.9f)
-                asyncOperation.allowSceneActivation = true;
-
-            yield return null;
-        }
-    }
+    
 }
