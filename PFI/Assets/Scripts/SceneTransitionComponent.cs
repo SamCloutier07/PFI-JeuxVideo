@@ -49,7 +49,7 @@ public class SceneTransitionComponent : MonoBehaviour
     {
         yield return fader.FadeOut(1);
         
-        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(1);
+        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(2);
         asyncOperation.allowSceneActivation = false;
         
         while (!asyncOperation.isDone)

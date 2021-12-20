@@ -6,8 +6,8 @@ public class ExitGame : MonoBehaviour
 {
    public void Exit()
    {
-      if(EditorApplication.isPlaying)
-         EditorApplication.ExitPlaymode();
-      else Application.Quit();  
+      // if(EditorApplication.isPlaying)
+      //    EditorApplication.ExitPlaymode();
+    Application.Quit();  
    }
 }
